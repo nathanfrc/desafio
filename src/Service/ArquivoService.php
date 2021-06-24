@@ -7,16 +7,15 @@ use ZipArchive;
 class ArquivoService
 {
 
-
-     private  $mapaBits = [
-        "num"=> ['start'=>0, 'end'=>3,'space'=>1,'pos'=>'left'],
-        "nome"=> ['start'=>5, 'end'=>17],'space'=>2, 'pos'=>'right',
-        "pot"=> ['start'=>19, 'end'=>24],'space'=>1,  'pos'=>'left',
-        "fcmx"=> ['start'=>30, 'end'=>4],'space'=>2, 'pos'=>'left',
-        "others"=> ['start'=>0, 'end'=>6],'space'=>1,'pos'=>'left'
+     private  $maps = [
+            "num"=> ['start'=>0, 'end'=>3,'space'=>1,'pos'=>'left'],
+            "nome"=> ['start'=>5, 'end'=>17,'space'=>2,'pos'=>'right'],
+            "pot"=> ['start'=>19, 'end'=>24,'space'=>1, 'pos'=>'left'],
+            "fcmx"=> ['start'=>30, 'end'=>4,'space'=>2, 'pos'=>'left'],
+            "others"=> ['start'=>0, 'end'=>6,'space'=>1,'pos'=>'left']
         ];
 
-     private $column = ['num','nome','pot','fcmx','others'];
+     private $column = [0=>'num',1=>'nome',2=>'pot',3=>'fcmx',4=>'others'];
 
     public function getArquivo()
     {
@@ -48,16 +47,25 @@ class ArquivoService
               if($i>1)
               {
                   $code = trim(substr($arquivoOriginal[$i],0,4));
-                  echo $code.PHP_EOL;
+                 // echo $code.PHP_EOL;
 
-                    if( ($ret = array_search($code,$usinasList))!==false)
+                    if( ($keyFind = array_search($code,$usinasList))!==false)
                     {
-                        echo "achou=".$code;
-                        echo "[". $this->createNewLine($arquivoOriginal,$iniColumns)."]";
+
+                        echo "iniColumns=".$iniColumns.PHP_EOL;
+                        if($iniColumns >=($tamanhoColumns-1))
+                        {
+                            $iniColumns =0;
+                        }
+
+                        echo "achou=".$code.PHP_EOL;
+                        echo "[". $this->createNewLine($arquivoOriginal,$this->column[$iniColumns],$usinas[$keyFind])."]".PHP_EOL;
                         ++$iniColumns;
+                        echo "============================================".PHP_EOL;
 
 
-                        break;
+
+                        //break;
                     }
 
 
@@ -181,39 +189,69 @@ class ArquivoService
         }
     }
 
-    private function createNewLine($line,$key)
+    private function createNewLine($lineBat,$key,$csv)
     {
         try{
 
-            $mapBits = $this->mapaBits[$key];
+            $mapBits = $this->maps[$key];
+
+           if(strlen($csv['numeroUsina']) < $mapBits['end'])
+           {
+               $qt = $mapBits['end'] - strlen($csv['numeroUsina']);
+               if($mapBits['pos'] == 'left')
+               {
+                     if ($mapBits['start'] == 0)
+                     {
+                         ++$qt;
+                     }
+
+                   echo "qt=" . $qt . PHP_EOL;
+
+                     $espacos ="";
+
+                   for($i=0;$i<$qt;$i++)
+                   {
+                       $espacos .= " ";
+                   }
+
+                   if($mapBits['pos'] == 'left') {
+
+                       $linha = $espacos.$csv['numeroUsina'];
+
+                   }else{
+                       $linha = $csv['numeroUsina'].$espacos;
+                   }
+
+                   return $linha;
+
+               }
+
+           }
 
 
-
-            if(strlen($line) < $mapBits['end']) {
+        /*    if(strlen($lineBat) < $mapBits['end']) {
                 $qt = $mapBits['end'] - strlen($line);
 
                 if ($mapBits['pos'] == 'left') {
                     /*  if ($mapBits2['start'] == 1) {
                           ++$qt;
                       }*/
-                    echo "qt=" . $qt . PHP_EOL;
-                    $format = str_pad($line, $qt, " ", STR_PAD_LEFT);
+                //   echo "qt=" . $qt . PHP_EOL;
+        //    $format = str_pad($line, $qt, " ", STR_PAD_LEFT);
 
-                } else {
+            /*    } else {
                     $format = str_pad($line, $qt, " ", STR_PAD_RIGHT);
-                }
+                }*/
 
                 //  $format = str_pad($format, $mapBits2['space'], " ", STR_PAD_RIGHT);
                 // $format = str_replace(" ", "&nbsp;", $format);
-                echo "[" . $format . "]";
+            //    echo "[" . $format . "]";
 
-                $pad = str_pad($nome, 20, "0",STR_PAD_LEFT);
+            /*    $pad = str_pad($nome, 20, "0",STR_PAD_LEFT);
 
                 echo $nome." ".strlen($nome).PHP_EOL;
                 exit;
-            }
-
-
+            }*/
 
 
         }catch(\Exception $e)
